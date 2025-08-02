@@ -4,6 +4,6 @@ import com.opensource.armnews.data.model.APIResponse
 import retrofit2.Response
 
 interface NewsRemoteDataSource {
-    suspend fun getNewsHeadlines(): Response<APIResponse>
+    suspend fun getNewsHeadlines(country: String, page: Int): Response<APIResponse>
     suspend fun getSearchedNews(searchQuery: String): Response<APIResponse>
 }
