@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
@@ -38,6 +40,7 @@ android {
         jvmTarget = '11'
     }
     buildFeatures {
+        viewBinding true
         buildConfig true
         compose true
     }
@@ -55,12 +58,20 @@ dependencies {
     implementation libs.androidx.material3
     implementation libs.androidx.lifecycle.viewmodel.ktx
     implementation libs.androidx.lifecycle.livedata.ktx
-    implementation(libs.okhttp)
+    implementation libs.okhttp
     implementation libs.retrofit
     implementation libs.converter.gson
     implementation libs.gson
-    implementation(libs.truth)
+    implementation libs.truth
     implementation libs.kotlin.test
+    implementation libs.hilt.android
+    implementation libs.androidx.navigation.fragment
+    implementation libs.androidx.navigation.ui
+
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.symbol.processing)
+    ksp(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     kapt libs.androidx.lifecycle.compiler
 
