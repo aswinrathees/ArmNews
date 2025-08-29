@@ -12,7 +12,6 @@ plugins {
 android {
     namespace 'com.opensource.armnews'
     compileSdk 35
-    def apiKey = project.properties["API_KEY"]
 
     defaultConfig {
         applicationId "com.opensource.armnews"
@@ -20,8 +19,8 @@ android {
         targetSdk 35
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "API_KEY", "\"${apiKey}\""
-        buildConfigField "String", "API_URL", api_url
+        buildConfigField "String", "API_KEY", API_KEY
+        buildConfigField "String", "API_URL", API_URL
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -68,7 +67,11 @@ dependencies {
     implementation libs.androidx.navigation.fragment
     implementation libs.androidx.navigation.ui
     implementation libs.glide
+    implementation(libs.androidx.room.runtime)
 
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See Add the KSP plugin to your project
+    ksp(libs.androidx.room.compiler)
     ksp(libs.hilt.android.compiler)
     ksp(libs.symbol.processing)
     ksp(libs.androidx.hilt.compiler)
