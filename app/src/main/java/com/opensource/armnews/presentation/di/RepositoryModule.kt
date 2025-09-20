@@ -1,6 +1,7 @@
 package com.opensource.armnews.presentation.di
 
 import com.opensource.armnews.data.repository.NewsRepositoryImpl
+import com.opensource.armnews.data.repository.datasource.NewsLocalDataSource
 import com.opensource.armnews.data.repository.datasource.NewsRemoteDataSource
 import com.opensource.armnews.domain.repository.NewsRepository
 import dagger.Module
@@ -15,7 +16,10 @@ class RepositoryModule {
 
     @Singleton
     @Provides
-    fun getNewsRepository(newsRemoteDataSource: NewsRemoteDataSource): NewsRepository {
-        return NewsRepositoryImpl(newsRemoteDataSource)
+    fun provideNewsRepository(
+        newsRemoteDataSource: NewsRemoteDataSource,
+        newsLocalDataSource: NewsLocalDataSource
+    ): NewsRepository {
+        return NewsRepositoryImpl(newsRemoteDataSource, newsLocalDataSource)
     }
 }
