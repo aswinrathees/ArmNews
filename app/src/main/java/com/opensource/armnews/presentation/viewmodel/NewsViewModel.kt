@@ -2,6 +2,7 @@ package com.opensource.armnews.presentation.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -39,7 +40,17 @@ class NewsViewModel(
     }
 
     private fun isNetworkAvailable(context: Context?): Boolean {
-        // Todo: Add ConnectivityManager code here. Also check for relevant permissions
-        return true
+        context?.let {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            capabilities?.let {
+                return true
+            } ?: run {
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.let {
+                    return activeNetworkInfo.isConnected
+                } ?: return false
+            }
+        } ?: return false
     }
 }
