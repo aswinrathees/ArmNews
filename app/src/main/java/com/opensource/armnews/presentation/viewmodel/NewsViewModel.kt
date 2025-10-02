@@ -6,19 +6,30 @@ import android.net.ConnectivityManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.opensource.armnews.data.model.APIResponse
+import com.opensource.armnews.data.model.Article
 import com.opensource.armnews.data.util.Resource
+import com.opensource.armnews.domain.usecase.DeleteSavedNewsUseCase
 import com.opensource.armnews.domain.usecase.GetNewsHeadlinesUseCase
+import com.opensource.armnews.domain.usecase.GetSavedNewsUseCase
+import com.opensource.armnews.domain.usecase.GetSearchedNewsUseCase
+import com.opensource.armnews.domain.usecase.SaveNewsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NewsViewModel(
     private val application: Application,
-    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase
+    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
+    private val getSearchedNewsUseCase: GetSearchedNewsUseCase,
+    private val saveNewsUseCase: SaveNewsUseCase,
+    private val getSavedNewsUseCase: GetSavedNewsUseCase,
+    private val deleteSavedNewsUseCase: DeleteSavedNewsUseCase
 ) : AndroidViewModel(application) {
 
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+    val searchedNews: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     fun getNewsHeadLines(country: String, page: Int) = viewModelScope.launch(Dispatchers.IO) {
         newsHeadLines.postValue(Resource.Loading())
@@ -37,6 +48,38 @@ class NewsViewModel(
         } catch (e: Exception) {
             Log.e("NewsViewModel", "Error: ${e.message}")
         }
+    }
+
+    fun searchNews(country: String, searchQuery: String, page: Int) = viewModelScope.launch {
+        searchedNews.postValue(Resource.Loading())
+        try {
+            when (isNetworkAvailable(application)) {
+                true -> {
+                    val apiResult = getSearchedNewsUseCase.execute(country, searchQuery, page)
+                    searchedNews.postValue(apiResult)
+                }
+
+                false -> {
+                    searchedNews.postValue(Resource.Error("Internet is not available"))
+                }
+            }
+        } catch (e: Exception) {
+            searchedNews.postValue(Resource.Error(e.message.toString()))
+        }
+    }
+
+    fun saveArticle(article: Article) = viewModelScope.launch {
+        saveNewsUseCase.execute(article)
+    }
+
+    fun getSavedNews() = liveData {
+        getSavedNewsUseCase.execute().collect {
+            emit(it)
+        }
+    }
+
+    fun deleteArticle(article: Article) = viewModelScope.launch {
+        deleteSavedNewsUseCase.execute(article)
     }
 
     private fun isNetworkAvailable(context: Context?): Boolean {
