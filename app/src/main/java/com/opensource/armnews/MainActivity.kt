@@ -9,12 +9,14 @@ import com.opensource.armnews.databinding.ActivityMainBinding
 import com.opensource.armnews.presentation.viewmodel.NewsViewModel
 import com.opensource.armnews.presentation.viewmodel.NewsViewModelFactory
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     internal lateinit var newsViewModel: NewsViewModel
+    @Inject
     internal lateinit var newsViewModelFactory: NewsViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
