@@ -36,5 +36,4 @@
             app:argType="com.opensource.armnews.data.model.Article" />
     </fragment>
 
-
 </navigation>

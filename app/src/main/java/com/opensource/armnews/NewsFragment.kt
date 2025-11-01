@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.opensource.armnews.data.util.Resource
 import com.opensource.armnews.databinding.FragmentNewsBinding
@@ -17,6 +18,12 @@ class NewsFragment : Fragment() {
     private lateinit var fragmentNewsBinding: FragmentNewsBinding
     private lateinit var newsViewModel: NewsViewModel
     private lateinit var newsAdapter: NewsAdapter
+
+    private var page = 1
+    private var isScrolling = false
+    private var isLoading = false
+    private var isLastPage = false
+    private var pages = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,14 +44,30 @@ class NewsFragment : Fragment() {
     }
 
     private fun getNewsList() {
+        newsAdapter = NewsAdapter()
+        newsAdapter.setOnItemClickListener {
+            val bundle = Bundle().apply {
+                putSerializable("selected_article", it)
+            }
+
+            findNavController().navigate(R.id.action_newsFragment_to_infoFragment, bundle)
+        }
+
         newsViewModel.getNewsHeadLines("us", 1)
-        newsViewModel.newsHeadLines.observe(viewLifecycleOwner, { response ->
+        newsViewModel.newsHeadLines.observe(viewLifecycleOwner) { response ->
 
             when (response) {
                 is Resource.Success -> {
                     handleProgressBar(true)
                     response.data?.let {
                         newsAdapter.differ.submitList(it.articles.toList())
+                        pages = if (it.totalResults % 20 == 0) {
+                            it.totalResults / 20
+                        } else {
+                            it.totalResults / 20 + 1
+                        }
+
+                        isLastPage = page == pages
                     }
                 }
 
@@ -59,11 +82,10 @@ class NewsFragment : Fragment() {
                     handleProgressBar(true)
                 }
             }
-        })
+        }
     }
 
     private fun setUpRecyclerView() {
-        newsAdapter = NewsAdapter()
         fragmentNewsBinding.newsList.adapter = newsAdapter
         fragmentNewsBinding.newsList.layoutManager = LinearLayoutManager(activity)
     }

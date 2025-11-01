@@ -2,7 +2,7 @@ package com.opensource.armnews.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class APIResponse(
+data class APIResponse (
     @SerializedName("articles")
     val articles: List<Article>,
     @SerializedName("status")
