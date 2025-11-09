@@ -1,17 +1,23 @@
 package com.opensource.armnews
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.opensource.armnews.data.util.Resource
 import com.opensource.armnews.databinding.FragmentNewsBinding
 import com.opensource.armnews.presentation.adapter.NewsAdapter
 import com.opensource.armnews.presentation.viewmodel.NewsViewModel
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class NewsFragment : Fragment() {
 
@@ -39,8 +45,9 @@ class NewsFragment : Fragment() {
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
         newsViewModel = (activity as MainActivity).newsViewModel
 
-        getNewsList()
         setUpRecyclerView()
+        getNewsList()
+        setSearchView()
     }
 
     private fun getNewsList() {
@@ -86,11 +93,93 @@ class NewsFragment : Fragment() {
     }
 
     private fun setUpRecyclerView() {
-        fragmentNewsBinding.newsList.adapter = newsAdapter
-        fragmentNewsBinding.newsList.layoutManager = LinearLayoutManager(activity)
+        fragmentNewsBinding.newsList.apply {
+            adapter = newsAdapter
+            fragmentNewsBinding.newsList.layoutManager = LinearLayoutManager(activity)
+            addOnScrollListener(this@NewsFragment.onScrollListener)
+        }
     }
 
     private fun handleProgressBar(show: Boolean) {
         fragmentNewsBinding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+    }
+
+    private val onScrollListener = object: RecyclerView.OnScrollListener() {
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+
+            if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                isScrolling = true
+            }
+        }
+
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            val layoutManager = fragmentNewsBinding.newsList.layoutManager as LinearLayoutManager
+            val currentListSize = layoutManager.itemCount
+            val visibleItems = layoutManager.childCount
+            val topPosition = layoutManager.findFirstVisibleItemPosition()
+
+            val hasReachedToEnd = topPosition + visibleItems >= currentListSize
+            val shouldPaginate = !isLoading && !isLastPage && hasReachedToEnd && isScrolling
+
+            if (shouldPaginate) {
+                page++
+                newsViewModel.getNewsHeadLines("us", page)
+                isScrolling = false
+            }
+        }
+    }
+
+    private fun setSearchView() {
+        fragmentNewsBinding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                newsViewModel.searchNews("us", query.toString(), page)
+                viewSearchedNews()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                MainScope().launch {
+                    delay(2000)
+                    newsViewModel.searchNews("us", newText.toString(), page)
+                    viewSearchedNews()
+                }
+                return false
+            }
+        })
+    }
+
+    private fun viewSearchedNews() {
+        newsViewModel.searchedNews.observe(viewLifecycleOwner) { response ->
+            when (response) {
+                is Resource.Success -> {
+                    handleProgressBar(false)
+
+                    response.data?.let {
+                        newsAdapter.differ.submitList(it.articles.toList())
+                        if (it.totalResults % 20 == 0) {
+                            pages = it.totalResults / 20
+                        } else {
+                            pages = it.totalResults / 20 + 1
+                        }
+                        isLastPage = page == pages
+                    }
+                }
+
+                is Resource.Error -> {
+                    handleProgressBar(false)
+                    response.message?.let {
+                        Toast.makeText(activity, "An error occurred: $it", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                is Resource.Loading -> {
+                    handleProgressBar(true)
+                }
+            }
+        }
     }
 }

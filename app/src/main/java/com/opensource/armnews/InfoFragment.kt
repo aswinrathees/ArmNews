@@ -37,10 +37,9 @@ class InfoFragment : Fragment() {
 
         binding.wvInfo.apply {
             webViewClient = WebViewClient()
-            if (article.url != null) {
-                loadUrl(article.url)
+            article.url.let {
+                loadUrl(it)
             }
-
         }
         binding.fabSave.setOnClickListener {
             viewModel.saveArticle(article)
