@@ -44,6 +44,7 @@ class NewsFragment : Fragment() {
 
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
         newsViewModel = (activity as MainActivity).newsViewModel
+        newsAdapter = (activity as MainActivity).newsAdapter
 
         setUpRecyclerView()
         getNewsList()
@@ -51,7 +52,6 @@ class NewsFragment : Fragment() {
     }
 
     private fun getNewsList() {
-        newsAdapter = NewsAdapter()
         newsAdapter.setOnItemClickListener {
             val bundle = Bundle().apply {
                 putSerializable("selected_article", it)
