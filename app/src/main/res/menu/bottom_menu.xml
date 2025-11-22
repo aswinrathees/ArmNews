@@ -8,7 +8,7 @@
         android:title="@string/news_headlines" />
 
     <item
-        android:id="@+id/saveFragment"
+        android:id="@+id/savedFragment"
         android:icon="@drawable/ic_saved_news"
         android:title="@string/saved_news" />
 </menu>
