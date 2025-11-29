@@ -101,7 +101,7 @@ class NewsFragment : Fragment() {
     }
 
     private fun handleProgressBar(show: Boolean) {
-        fragmentNewsBinding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+        //fragmentNewsBinding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     private val onScrollListener = object: RecyclerView.OnScrollListener() {

@@ -9,7 +9,7 @@
         android:id="@+id/fragmentContainerView"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="7"
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
@@ -19,8 +19,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:itemTextColor="@color/list_text"
+        android:background="@color/search_background"
         app:itemIconTint="@color/list_text"
+        app:itemTextColor="@color/list_text"
         app:menu="@menu/bottom_menu" />
 
 </LinearLayout>
